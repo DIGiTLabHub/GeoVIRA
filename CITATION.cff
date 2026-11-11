@@ -1,0 +1,37 @@
+cff-version: 1.2.0
+message: "If you use GeoVIRA, please cite the paper below."
+title: "GeoVIRA: Geometry–Visual Interfaces for Radiographic Angle Measurement"
+type: software
+repository-code: "https://github.com/DIGiTLabHub/GeoVIRA"
+authors:
+  - family-names: Jiang
+    given-names: Hongcheng
+  - family-names: Han
+    given-names: Cheng
+  - family-names: Chen
+    given-names: ZhiQiang
+  - family-names: Xu
+    given-names: Dianxiang
+  - family-names: Grote
+    given-names: Caleb
+  - family-names: Chan
+    given-names: Sherwin
+preferred-citation:
+  type: conference-paper
+  title: "GeoVIRA: Geometry–Visual Interfaces for Radiographic Angle Measurement"
+  collection-title: "Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision Workshops (WACVW)"
+  year: 2027
+  notes: "Accepted at the FABRIC Workshop, WACVW 2027"
+  authors:
+    - family-names: Jiang
+      given-names: Hongcheng
+    - family-names: Han
+      given-names: Cheng
+    - family-names: Chen
+      given-names: ZhiQiang
+    - family-names: Xu
+      given-names: Dianxiang
+    - family-names: Grote
+      given-names: Caleb
+    - family-names: Chan
+      given-names: Sherwin

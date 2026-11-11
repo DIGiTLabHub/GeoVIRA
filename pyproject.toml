@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "geovira-research"
+version = "0.1.0"
+description = "Research implementation for GeoVIRA"
+requires-python = ">=3.10"
+dependencies = ["numpy", "torch>=2.4", "pandas", "Pillow", "scipy"]
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]
+
+[tool.setuptools]
+packages = ["geomed"]
+
+[tool.setuptools.package-dir]
+geomed = "geomed/src/geomed"
+
+[tool.pytest.ini_options]
+pythonpath = ["geomed/src", "geomed/src/experiments"]
+testpaths = ["tests"]

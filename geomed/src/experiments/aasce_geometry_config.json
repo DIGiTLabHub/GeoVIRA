@@ -1,0 +1,53 @@
+{
+  "protocol_version": "controlled-aasce-geometry-on-hih-oof-v1",
+  "dataset": {
+    "outer_split": {
+      "mode": "fixed_image_level",
+      "split_seed": 42,
+      "sizes": {"train": 336, "val": 72, "test": 73},
+      "patient_ids_available": false
+    },
+    "landmark_inputs": {
+      "train": "outputs/benchmarks/aasce_landmark_oof/seed_{detector_seed}/train_oof_predictions.npz",
+      "val": "outputs/benchmarks/aasce_landmark_oof/seed_{detector_seed}/val_predictions.npz",
+      "test": "outputs/benchmarks/aasce_landmark_oof/seed_{detector_seed}/test_predictions.npz"
+    },
+    "train_prediction_policy": "five-fold image OOF within the frozen 336-image training split",
+    "val_test_prediction_policy": "full-train AASCE-HIH-68 checkpoint selected only by validation landmark error",
+    "geometry_policy": "predicted L68 -> deterministic Auto-EV selector -> selected L8",
+    "target_mode": "single_primary_cobb",
+    "target_order": ["Cobb"]
+  },
+  "seeds": [17, 42, 73],
+  "seed_protocol": {
+    "default": "paired_detector_downstream",
+    "pairs": [
+      {"detector_seed": 17, "downstream_seed": 17},
+      {"detector_seed": 42, "downstream_seed": 42},
+      {"detector_seed": 73, "downstream_seed": 73}
+    ],
+    "fixed_detector_mode": "diagnostic only; mean and SD describe downstream randomness conditional on one detector"
+  },
+  "batch_size": 16,
+  "num_workers": 4,
+  "amp": true,
+  "max_epochs": 60,
+  "patience": 10,
+  "optimizer": "AdamW",
+  "scheduler": "CosineAnnealingLR",
+  "loss": {"name": "HuberLoss", "delta": 5.0, "reduction": "mean"},
+  "gradient_clip_norm": 1.0,
+  "checkpoint_selection": "validation Cobb MAE only",
+  "search_space": [
+    {"lr": 0.0001, "weight_decay": 0.0001},
+    {"lr": 0.0003, "weight_decay": 0.0001},
+    {"lr": 0.0001, "weight_decay": 0.001}
+  ],
+  "metrics": {
+    "primary": "MAE",
+    "agreement": "ICC(2,1)",
+    "tolerance_deg": {"Cobb": 5.0},
+    "additional": ["bias", "95% LoA"]
+  },
+  "models": ["coordmlp", "deepsets", "gnn", "gae"]
+}

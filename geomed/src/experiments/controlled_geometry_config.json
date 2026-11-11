@@ -1,0 +1,100 @@
+{
+  "protocol_version": "controlled-geometry-on-hih-oof-v1",
+  "datasets": {
+    "hvangle": {
+      "outer_split": {
+        "mode": "patient",
+        "split_seed": 42,
+        "sizes": {
+          "train": 829,
+          "val": 172,
+          "test": 176
+        }
+      },
+      "landmark_inputs": {
+        "train": "outputs/benchmarks/hih_patient_oof/seed_{detector_seed}/train_oof_predictions.npz",
+        "val": "outputs/benchmarks/hih_patient_oof/seed_{detector_seed}/val_predictions.npz",
+        "test": "outputs/benchmarks/hih_patient_oof/seed_{detector_seed}/test_predictions.npz",
+        "train_prediction_policy": "five-fold patient OOF",
+        "val_test_prediction_policy": "full-train HIH checkpoint selected on validation endpoint error"
+      },
+      "target_mode": "joint_hva_ima",
+      "target_order": [
+        "HVA",
+        "IMA"
+      ]
+    },
+    "aasce": {
+      "outer_split": {
+        "mode": "image",
+        "split_seed": 42,
+        "sizes": {
+          "train": 336,
+          "val": 72,
+          "test": 73
+        },
+        "patient_ids_available": false
+      },
+      "landmark_inputs": {
+        "train": "outputs/benchmarks/aasce_landmark_oof/seed_{detector_seed}/train_oof_predictions.npz",
+        "val": "outputs/benchmarks/aasce_landmark_oof/seed_{detector_seed}/val_predictions.npz",
+        "test": "outputs/benchmarks/aasce_landmark_oof/seed_{detector_seed}/test_predictions.npz",
+        "train_prediction_policy": "five-fold image OOF within the frozen 336-image training split",
+        "val_test_prediction_policy": "full-train landmark detector selected on the frozen 72-image validation split"
+      },
+      "target_mode": "single_primary_cobb",
+      "target_order": [
+        "Cobb"
+      ],
+      "geometry_policy": "predict 68 vertebral corners, apply the deterministic primary-curve selector, and pass only the selected eight corners to the downstream geometry model",
+      "target_source": "angles.csv column 0 (row-wise maximum released angle)"
+    }
+  },
+  "seeds": [
+    17,
+    42,
+    73
+  ],
+  "batch_size": 16,
+  "num_workers": 4,
+  "amp": true,
+  "max_epochs": 60,
+  "patience": 10,
+  "optimizer": "AdamW",
+  "scheduler": "CosineAnnealingLR",
+  "loss": {
+    "name": "HuberLoss",
+    "delta": 5.0,
+    "reduction": "mean"
+  },
+  "gradient_clip_norm": 1.0,
+  "checkpoint_selection": "unweighted mean of validation HVA MAE and IMA MAE",
+  "search_space": [
+    {
+      "lr": 0.0001,
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0003,
+      "weight_decay": 0.0001
+    },
+    {
+      "lr": 0.0001,
+      "weight_decay": 0.001
+    }
+  ],
+  "metrics": {
+    "primary": "MAE",
+    "agreement": "ICC(2,1)",
+    "tolerance_deg": {
+      "Cobb": 5.0,
+      "HVA": 5.0,
+      "IMA": 3.0
+    },
+    "additional": [
+      "bias",
+      "95% LoA"
+    ]
+  },
+  "matched_reference": "scripts/benchmarks/config.json and cross_model_benchmark.py ResNet50 (ImageNet) protocol"
+}

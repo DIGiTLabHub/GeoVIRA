@@ -1,0 +1,68 @@
+{
+  "protocol_version": "paired-hih-geometry-coordinate-stem-standardized-v2",
+  "datasets": {
+    "hvangle": {
+      "outer_split": {
+        "mode": "patient",
+        "split_seed": 42,
+        "sizes": {"train": 829, "val": 172, "test": 176}
+      },
+      "landmark_inputs": {
+        "train": "outputs/benchmarks/hih_patient_oof/seed_{detector_seed}/train_oof_predictions.npz",
+        "val": "outputs/benchmarks/hih_patient_oof/seed_{detector_seed}/val_predictions.npz",
+        "test": "outputs/benchmarks/hih_patient_oof/seed_{detector_seed}/test_predictions.npz",
+        "train_prediction_policy": "five-fold patient OOF",
+        "val_test_prediction_policy": "full-train HIH checkpoint selected on validation endpoint error"
+      },
+      "target_mode": "joint_hva_ima",
+      "target_order": ["HVA", "IMA"]
+    }
+  },
+  "seeds": [17, 42, 73],
+  "models": ["coordmlp", "deepsets_role_coordstem", "gnn_role_coordstem", "gae"],
+  "batch_size": 16,
+  "num_workers": 4,
+  "amp": true,
+  "max_epochs": 60,
+  "patience": 10,
+  "optimizer": "AdamW",
+  "scheduler": "CosineAnnealingLR",
+  "coordinate_input_stem": {
+    "scope": ["deepsets_role_coordstem", "gnn_role_coordstem"],
+    "geometry_normalization": "per-image centroid subtraction and isotropic RMS-radius scaling",
+    "identity_conditioning": "separate 64-d coordinate and 64-d learned identity branches followed by 64-d fusion",
+    "angle_preservation": true
+  },
+  "target_standardization": {
+    "enabled": true,
+    "source": "training OOF targets only",
+    "ddof": 1,
+    "inverse_transform_before_validation_and_test_metrics": true
+  },
+  "loss": {
+    "name": "HuberLoss",
+    "delta": 1.0,
+    "units": "training-target standard deviations",
+    "reduction": "mean"
+  },
+  "gradient_clip_norm": 1.0,
+  "checkpoint_selection": "unweighted mean of validation HVA and IMA MAE in degrees",
+  "search_space": [
+    {"lr": 0.0001, "weight_decay": 0.0},
+    {"lr": 0.0001, "weight_decay": 0.00001},
+    {"lr": 0.0001, "weight_decay": 0.0001},
+    {"lr": 0.0003, "weight_decay": 0.0},
+    {"lr": 0.0003, "weight_decay": 0.00001},
+    {"lr": 0.0003, "weight_decay": 0.0001},
+    {"lr": 0.001, "weight_decay": 0.0},
+    {"lr": 0.001, "weight_decay": 0.00001},
+    {"lr": 0.001, "weight_decay": 0.0001}
+  ],
+  "metrics": {
+    "primary": "MAE",
+    "agreement": "ICC(2,1)",
+    "tolerance_deg": {"Cobb": 5.0, "HVA": 5.0, "IMA": 3.0},
+    "additional": ["bias", "95% LoA", "prediction mean", "prediction SD"]
+  },
+  "matched_reference": "all four reported models share target transform, optimizer, schedule, loss, 3x3 LR/WD grid, validation selection, and paired detector/downstream seeds"
+}
